@@ -1,0 +1,42 @@
+services:
+  vllm:
+    #image: vllm/vllm-openai:latest
+    build: .
+    container_name: vllm-server
+    environment:
+      - TRITON_PTXAS_PATH=/usr/local/cuda/bin/ptxas
+      - VLLM_API_KEY=thisisunsafe
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+    privileged: true
+    command:
+      - vllm
+      - serve
+      - Qwen/Qwen3-VL-30B-A3B-Instruct
+      - --tensor-parallel-size=1
+      - --enable-expert-parallel
+      - --max-model-len=64000
+      - --max-num-batched-tokens=32000
+      - --enforce-eager
+      - --gpu-memory-utilization=0.90
+      - --max-num-seqs=16
+      - --port=8000
+      - --host=0.0.0.0
+      - --trust-remote-code
+
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1                      # ← or "all" if you prefer
+              capabilities: [gpu]
+    ipc: host
+    ulimits:
+      memlock: -1
+      stack: 67108864
+
+    ports:
+      - "8000:8000"
