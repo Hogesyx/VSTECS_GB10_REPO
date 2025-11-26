@@ -32,10 +32,6 @@ RUN python3 use_existing_torch.py
 
 RUN pip install -r requirements/build.txt
 
-# Apply patch
-COPY vllm_patch.diff .
-RUN patch -p1 < vllm_patch.diff
-
 RUN apt-get update && apt-get install -y \
     cmake \
     build-essential \
